@@ -4,7 +4,7 @@
   "name": "Waste Management Pickup",
   "config_flow": true,
   "documentation": "https://www.home-assistant.io/integrations/waste_management",
-  "requirements": ["waste-management==1.0"],
+  "requirements": ["waste-management==1.1"],
   "ssdp": [],
   "zeroconf": [],
   "homekit": {},

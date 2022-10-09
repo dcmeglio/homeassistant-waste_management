@@ -15,9 +15,8 @@ import homeassistant.helpers.config_validation as cv
 
 from waste_management import WMClient
 
-CONF_ACCOUNT = "account"
 
-from .const import DOMAIN
+from .const import CONF_ACCOUNT, CONF_SERVICES, DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -30,19 +29,10 @@ STEP_USER_DATA_SCHEMA = vol.Schema(
 )
 
 
-class PlaceholderHub:
-    """Placeholder class to make tests pass.
-
-    TODO Remove this placeholder class and replace with things from your PyPI package.
-    """
-
-    def __init__(self, host: str) -> None:
-        """Initialize."""
-        self.host = host
-
-    async def authenticate(self, username: str, password: str) -> bool:
-        """Test if we can authenticate with the host."""
-        return True
+class WasteManagementData:
+    def __init__(self):
+        self.accounts = None
+        self.services = None
 
 
 async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str, Any]:
@@ -68,6 +58,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     def __init__(self):
 
         self.data: dict = {}
+        self.wmData = WasteManagementData()
 
     VERSION = 1
 
@@ -93,7 +84,6 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             errors["base"] = "unknown"
         else:
             return await self.async_step_accounts()
-        #    return self.async_create_entry(title=info["title"], data=user_input)
 
         return self.async_show_form(
             step_id="user", data_schema=STEP_USER_DATA_SCHEMA, errors=errors
@@ -103,15 +93,15 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
         if user_input is None:
-            account_data = await self.hass.async_add_executor_job(
+            self.wmData.accounts = await self.hass.async_add_executor_job(
                 self._wmclient.get_accounts
             )
 
-            self._accounts = {x.id: x.name for x in account_data}
+            self._accounts = {x.id: x.name for x in self.wmData.accounts}
             return self.async_show_form(
                 step_id="accounts",
                 data_schema=vol.Schema(
-                    {vol.Required("account"): vol.In(self._accounts)}
+                    {vol.Required(CONF_ACCOUNT): vol.In(self._accounts)}
                 ),
             )
         else:
@@ -122,20 +112,27 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
         if user_input is None:
-            service_data = await self.hass.async_add_executor_job(
-                self._wmclient.get_services, self.data["account"]
+            self.wmData.services = await self.hass.async_add_executor_job(
+                self._wmclient.get_services, self.data[CONF_ACCOUNT]
             )
-            self._services = {x.id: x.name for x in service_data}
+            self._services = {x.id: x.name for x in self.wmData.services}
             return self.async_show_form(
                 step_id="services",
                 data_schema=vol.Schema(
                     {
                         vol.Required(
-                            "services", default=list(self._services)
+                            CONF_SERVICES, default=list(self._services)
                         ): cv.multi_select(self._services)
                     }
                 ),
             )
+        else:
+            self.data[CONF_SERVICES] = user_input[CONF_SERVICES]
+
+            title = next(
+                x.name for x in self.wmData.accounts if x.id == self.data[CONF_ACCOUNT]
+            )
+            return self.async_create_entry(title=title, data=self.data)
 
 
 class InvalidAuth(HomeAssistantError):
