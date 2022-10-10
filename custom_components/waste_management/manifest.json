@@ -1,7 +1,7 @@
 {
   "version": "0.0.1",
   "domain": "waste_management",
-  "name": "Waste Management Pickup",
+  "name": "Waste Management",
   "config_flow": true,
   "documentation": "https://www.home-assistant.io/integrations/waste_management",
   "requirements": ["waste-management==1.1"],
