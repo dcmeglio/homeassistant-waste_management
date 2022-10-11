@@ -1,7 +1,7 @@
 from datetime import timedelta
 
 import pytz
-from config.custom_components.waste_management.const import CONF_ACCOUNT, CONF_SERVICES
+from .const import CONF_ACCOUNT, CONF_SERVICES
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 
