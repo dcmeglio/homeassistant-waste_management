@@ -1,12 +1,13 @@
 from datetime import timedelta
+import datetime
 
-import pytz
+import homeassistant
 from .const import CONF_ACCOUNT, CONF_SERVICES
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
-
+import homeassistant.helpers.event
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.config_validation import service
+
 from waste_management import WMClient
 
 
@@ -52,6 +53,13 @@ class WasteManagementSensorEntity(SensorEntity):
         self._attr_icon = "mdi:trash-can"
         self._attr_device_class = "timestamp"
 
+        homeassistant.helpers.event.async_track_utc_time_change(
+            hass, self.timer_callback, hour=0, minute=1
+        )
+
+    async def timer_callback(self, datetime):
+        self.async_update()
+
     async def async_update(self) -> None:
         client = WMClient(self.username, self.password)
         await self.hass.async_add_executor_job(client.authenticate)
@@ -62,4 +70,8 @@ class WasteManagementSensorEntity(SensorEntity):
             client.get_service_pickup, self.account_id, self.service_id
         )
 
-        self._attr_native_value = pickup[0].astimezone()
+        today = datetime.date.today()
+        proposed_pickup = pickup[0].astimezone()
+        if proposed_pickup.date() < today:
+            proposed_pickup = pickup[1].astimestamp()
+        self._attr_native_value = proposed_pickup
