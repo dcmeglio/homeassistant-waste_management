@@ -1,10 +1,10 @@
 {
-  "version": "0.0.2",
+  "version": "0.0.3",
   "domain": "waste_management",
   "name": "Waste Management",
   "config_flow": true,
   "documentation": "https://www.home-assistant.io/integrations/waste_management",
-  "requirements": ["waste-management==1.1"],
+  "requirements": ["waste-management==1.2"],
   "ssdp": [],
   "zeroconf": [],
   "homekit": {},
