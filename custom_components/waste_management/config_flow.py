@@ -44,8 +44,8 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str,
     hub = WMClient(data["username"], data["password"])
 
     try:
-        await hass.async_add_executor_job(hub.authenticate)
-        await hass.async_add_executor_job(hub.okta_authorize)
+        await hub.async_authenticate()
+        await hub.async_okta_authorize()
     except Exception:
         raise InvalidAuth
 
@@ -93,9 +93,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
         if user_input is None:
-            self.wmData.accounts = await self.hass.async_add_executor_job(
-                self._wmclient.get_accounts
-            )
+            self.wmData.accounts = await self._wmclient.async_get_accounts()
 
             self._accounts = {x.id: x.name for x in self.wmData.accounts}
             return self.async_show_form(
@@ -112,8 +110,8 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
         if user_input is None:
-            self.wmData.services = await self.hass.async_add_executor_job(
-                self._wmclient.get_services, self.data[CONF_ACCOUNT]
+            self.wmData.services = await self._wmclient.async_get_services(
+                self.data[CONF_ACCOUNT]
             )
             self._services = {x.id: x.name for x in self.wmData.services}
             return self.async_show_form(

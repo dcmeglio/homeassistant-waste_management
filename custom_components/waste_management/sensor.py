@@ -18,11 +18,9 @@ async def async_setup_entry(hass: HomeAssistant, config, add_entities):
     config_data = config.data
     entities = []
     client = WMClient(config_data[CONF_USERNAME], config_data[CONF_PASSWORD])
-    await hass.async_add_executor_job(client.authenticate)
-    await hass.async_add_executor_job(client.okta_authorize)
-    wm_services = await hass.async_add_executor_job(
-        client.get_services, config_data[CONF_ACCOUNT]
-    )
+    await client.async_authenticate()
+    await client.async_okta_authorize()
+    wm_services = await client.async_get_services(config_data[CONF_ACCOUNT])
     for svc_id in config_data[CONF_SERVICES]:
         name = next(x.name for x in wm_services if x.id == svc_id)
         entities.append(
@@ -62,16 +60,14 @@ class WasteManagementSensorEntity(SensorEntity):
 
     async def async_update(self) -> None:
         client = WMClient(self.username, self.password)
-        await self.hass.async_add_executor_job(client.authenticate)
+        await client.async_authenticate()
 
-        await self.hass.async_add_executor_job(client.okta_authorize)
+        await client.async_okta_authorize()
 
-        pickup = await self.hass.async_add_executor_job(
-            client.get_service_pickup, self.account_id, self.service_id
-        )
+        pickup = await client.async_get_service_pickup(self.account_id, self.service_id)
 
         today = datetime.date.today()
         proposed_pickup = pickup[0].astimezone()
-        if proposed_pickup.date() < today:
+        if proposed_pickup.date() < today and len(pickup) > 1:
             proposed_pickup = pickup[1].astimestamp()
         self._attr_native_value = proposed_pickup
