@@ -1,5 +1,5 @@
 {
-  "version": "0.1.1",
+  "version": "0.1.2",
   "domain": "waste_management",
   "name": "Waste Management",
   "config_flow": true,
