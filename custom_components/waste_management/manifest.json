@@ -6,7 +6,7 @@
   "documentation": "https://github.com/dcmeglio/homeassistant-waste_management/blob/master/README",
   "issue_tracker": "https://github.com/dcmeglio/homeassistant-waste_management/issues",
   "requirements": [
-    "waste-management==3.0"
+    "waste-management==3.0.1"
   ],
   "ssdp": [],
   "zeroconf": [],
