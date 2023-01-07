@@ -69,5 +69,5 @@ class WasteManagementSensorEntity(SensorEntity):
         today = datetime.date.today()
         proposed_pickup = pickup[0].astimezone()
         if proposed_pickup.date() < today and len(pickup) > 1:
-            proposed_pickup = pickup[1].astimestamp()
+            proposed_pickup = pickup[1].astimezone()
         self._attr_native_value = proposed_pickup
