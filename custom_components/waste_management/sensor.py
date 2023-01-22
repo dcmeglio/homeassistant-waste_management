@@ -8,6 +8,7 @@ from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.exceptions import PlatformNotReady
 import homeassistant.helpers.event
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.httpx_client import get_async_client
 
 from waste_management import WMClient
 
@@ -19,7 +20,11 @@ async def async_setup_entry(hass: HomeAssistant, config, add_entities):
     config_data = config.data
     entities = []
     try:
-        client = WMClient(config_data[CONF_USERNAME], config_data[CONF_PASSWORD])
+        client = WMClient(
+            config_data[CONF_USERNAME],
+            config_data[CONF_PASSWORD],
+            get_async_client(hass),
+        )
         await client.async_authenticate()
         await client.async_okta_authorize()
         wm_services = await client.async_get_services(config_data[CONF_ACCOUNT])
@@ -64,14 +69,22 @@ class WasteManagementSensorEntity(SensorEntity):
 
     async def async_update(self) -> None:
         client = WMClient(self.username, self.password)
-        await client.async_authenticate()
+        pickup = None
+        try:
+            await client.async_authenticate()
 
-        await client.async_okta_authorize()
+            await client.async_okta_authorize()
 
-        pickup = await client.async_get_service_pickup(self.account_id, self.service_id)
+            pickup = await client.async_get_service_pickup(
+                self.account_id, self.service_id
+            )
+        except Exception:
+            self._attr_available = False
+            return
 
         today = datetime.date.today()
         proposed_pickup = pickup[0].astimezone()
         if proposed_pickup.date() < today and len(pickup) > 1:
             proposed_pickup = pickup[1].astimezone()
         self._attr_native_value = proposed_pickup
+        self._attr_available = True

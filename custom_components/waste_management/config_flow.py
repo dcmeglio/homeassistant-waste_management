@@ -12,6 +12,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.exceptions import HomeAssistantError
 import homeassistant.helpers.config_validation as cv
+from homeassistant.helpers.httpx_client import get_async_client
 
 from waste_management import WMClient
 
@@ -41,13 +42,13 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str,
     Data has the keys from STEP_USER_DATA_SCHEMA with values provided by the user.
     """
 
-    hub = WMClient(data["username"], data["password"])
+    hub = WMClient(data["username"], data["password"], get_async_client(hass))
 
     try:
         await hub.async_authenticate()
         await hub.async_okta_authorize()
-    except Exception:
-        raise InvalidAuth
+    except Exception as ex:
+        raise InvalidAuth from ex
 
     return hub
 
