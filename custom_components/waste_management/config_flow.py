@@ -80,8 +80,8 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             self.data[CONF_PASSWORD] = user_input[CONF_PASSWORD]
         except InvalidAuth:
             errors["base"] = "invalid_auth"
-        except Exception:  # pylint: disable=broad-except
-            _LOGGER.exception("Unexpected exception")
+        except Exception as ex:  # pylint: disable=broad-except
+            _LOGGER.exception("Unexpected exception %s", ex)
             errors["base"] = "unknown"
         else:
             return await self.async_step_accounts()
@@ -94,7 +94,12 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
         if user_input is None:
-            self.wmData.accounts = await self._wmclient.async_get_accounts()
+            errors = {}
+            try:
+                self.wmData.accounts = await self._wmclient.async_get_accounts()
+            except Exception as ex:
+                _LOGGER.exception("Unexpected exception %s", ex)
+                errors["base"] = "unknown"
 
             self._accounts = {x.id: x.name for x in self.wmData.accounts}
             return self.async_show_form(
@@ -102,6 +107,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 data_schema=vol.Schema(
                     {vol.Required(CONF_ACCOUNT): vol.In(self._accounts)}
                 ),
+                errors=errors,
             )
         else:
             self.data[CONF_ACCOUNT] = user_input[CONF_ACCOUNT]
@@ -111,9 +117,14 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
         if user_input is None:
-            self.wmData.services = await self._wmclient.async_get_services(
-                self.data[CONF_ACCOUNT]
-            )
+            errors = {}
+            try:
+                self.wmData.services = await self._wmclient.async_get_services(
+                    self.data[CONF_ACCOUNT]
+                )
+            except Exception as ex:
+                _LOGGER.exception("Unexpected exception %s", ex)
+                errors["base"] = "unknown"
             self._services = {x.id: x.name for x in self.wmData.services}
             return self.async_show_form(
                 step_id="services",
@@ -124,6 +135,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         ): cv.multi_select(self._services)
                     }
                 ),
+                errors=errors,
             )
         else:
             self.data[CONF_SERVICES] = user_input[CONF_SERVICES]

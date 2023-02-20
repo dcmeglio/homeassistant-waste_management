@@ -1,12 +1,12 @@
 {
-  "version": "0.1.5",
+  "version": "0.1.6",
   "domain": "waste_management",
   "name": "Waste Management",
   "config_flow": true,
-  "documentation": "https://github.com/dcmeglio/homeassistant-waste_management/blob/master/README",
+  "documentation": "https://github.com/dcmeglio/homeassistant-waste_management/blob/master/README.md",
   "issue_tracker": "https://github.com/dcmeglio/homeassistant-waste_management/issues",
   "requirements": [
-    "waste-management==3.1.0"
+    "waste-management==3.1.1"
   ],
   "ssdp": [],
   "zeroconf": [],

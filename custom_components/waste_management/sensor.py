@@ -1,5 +1,6 @@
 from datetime import timedelta
 import datetime
+import logging
 
 import homeassistant
 from .const import CONF_ACCOUNT, CONF_SERVICES
@@ -12,8 +13,10 @@ from homeassistant.helpers.httpx_client import get_async_client
 
 from waste_management import WMClient
 
+_LOGGER = logging.getLogger(__name__)
 
-SCAN_INTERVAL = timedelta(hours=12)
+
+SCAN_INTERVAL = timedelta(hours=6)
 
 
 async def async_setup_entry(hass: HomeAssistant, config, add_entities):
@@ -42,7 +45,8 @@ async def async_setup_entry(hass: HomeAssistant, config, add_entities):
             )
         add_entities(entities, True)
     except Exception as ex:
-        raise PlatformNotReady("Error setting up sensor platform: %s", ex) from ex
+        _LOGGER.error("Error setting up sensor platform: %s", ex)
+        raise PlatformNotReady() from ex
 
 
 class WasteManagementSensorEntity(SensorEntity):
