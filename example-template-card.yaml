@@ -1,0 +1,79 @@
+type: horizontal-stack
+cards:
+  - type: custom:mushroom-template-card
+    primary: Trash Pickup
+    secondary: >-
+      {% set Today = as_timestamp(now()) | timestamp_custom('%Y%m%d', false) |
+      float %}
+      {% set GarbageDay = as_timestamp(states('sensor.96_gallon_toter_limited'))
+      | timestamp_custom('%Y%m%d', false) | float %}
+      {% set GarbageTime = (GarbageDay - Today) %}
+      {% if GarbageTime == 1 %}
+      Tomorrow
+      {% elif GarbageTime == 0 %}
+      Today
+      {% else %}
+      {{ as_timestamp(states('sensor.96_gallon_toter_limited')) |
+      timestamp_custom('%A %b %d', false) }}
+      {% endif %}
+    icon: mdi:trash-can
+    entity: sensor.96_gallon_toter_limited
+    tap_action:
+      action: more-info
+    hold_action:
+      action: none
+    double_tap_action:
+      action: none
+    icon_color: >-
+      {% set Today = as_timestamp(now()) | timestamp_custom('%Y%m%d', false) |
+      float %}
+      {% set GarbageDay = as_timestamp(states('sensor.96_gallon_toter_limited'))
+      | timestamp_custom('%Y%m%d', false) | float %}
+      {% set GarbageTime = (GarbageDay - Today) %}
+      {% if GarbageTime == 1 %}
+      yellow
+      {% elif GarbageTime == 0 %}
+      red
+      {% else %}
+      green
+      {% endif %}
+      
+  - type: custom:mushroom-template-card
+    primary: Recycling Pickup
+    secondary: >-
+      {% set Today = as_timestamp(now()) | timestamp_custom('%Y%m%d', false) |
+      float %}
+      {% set RecycleDay =
+      as_timestamp(states('sensor.64_gallon_toter_recycle_limited')) |
+      timestamp_custom('%Y%m%d', false) | float %}
+      {% set RecycleTime = (RecycleDay - Today) %}
+      {% if RecycleTime == 1 %}
+      Tomorrow
+      {% elif RecycleTime == 0 %}
+      Today
+      {% else %}
+      {{ as_timestamp(states('sensor.64_gallon_toter_recycle_limited')) |
+      timestamp_custom('%A %b %d', false) }}
+      {% endif %}
+    icon: mdi:recycle
+    entity: sensor.64_gallon_toter_recycle_limited
+    tap_action:
+      action: more-info
+    hold_action:
+      action: none
+    double_tap_action:
+      action: none
+    icon_color: >-
+      {% set Today = as_timestamp(now()) | timestamp_custom('%Y%m%d', false) |
+      float %}
+      {% set RecycleDay =
+      as_timestamp(states('sensor.64_gallon_toter_recycle_limited')) |
+      timestamp_custom('%Y%m%d', false) | float %}
+      {% set RecycleTime = (RecycleDay - Today) %}
+      {% if RecycleTime == 1 %}
+      yellow
+      {% elif RecycleTime == 0 %}
+      red
+      {% else %}
+      green
+      {% endif %}
